@@ -1,8 +1,13 @@
 # crosswatch_backend
-The backend is a nodejs application, so to start it, you need an installation of nodejs. Then it's just
+The backend is a nodejs application, so to start it, you need an installation of nodejs and npm. Then you navigate to the crosswatch_backend folder, and it's just
+```
+    npm install
+```
+to install node package dependencies for the server, and
 ```
     nodejs server.js
 ```
+to start the server.
 
 By default, the server runs on port 3000. It reads the PORT environment variable, so you can set a different port by, for example
 ```
