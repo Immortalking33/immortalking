@@ -36,7 +36,7 @@ const getVideoProgress = (roomId) => {
   const room = io.sockets.adapter.rooms[roomId];
   if (!room.time) return null;
 
-  const additionalProgress = 
+  const additionalProgress =
     room.state === RoomStates.PLAYING && ((new Date()) - room.time.date) / 1000;
   return room.time.progress + additionalProgress;
 }
@@ -78,5 +78,11 @@ io.on('connection', socket => {
     const roomState = getRoomState(roomId);
     videoProgress = getVideoProgress(roomId);
     socket.to(roomId).emit('update', socket.id, roomState, videoProgress, userCount);
+  });
+
+  socket.on('chat', (nick, message) => {
+    console.log('Received Chat from ', socket.id)
+    const userCount = getUserCount(roomId);
+    socket.to(roomId).emit('chat', socket.id, nick, message)
   });
 });
