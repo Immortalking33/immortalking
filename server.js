@@ -81,8 +81,7 @@ io.on('connection', socket => {
   });
 
   socket.on('chat', (nick, message) => {
-    console.log('Received Chat from ', socket.id)
-    const userCount = getUserCount(roomId);
-    socket.to(roomId).emit('chat', socket.id, nick, message)
+    console.log('Received Chat from ', socket.id);
+    socket.to(roomId).emit('chat', socket.id, nick, message);
   });
 });
