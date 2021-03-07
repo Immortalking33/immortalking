@@ -82,6 +82,6 @@ io.on('connection', socket => {
 
   socket.on('chat', (nick, message) => {
     console.log('Received Chat from ', socket.id);
-    socket.to(roomId).emit('chat', socket.id, nick, message);
+    io.in(roomId).emit('chat', socket.id, nick, message);
   });
 });
