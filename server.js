@@ -11,29 +11,63 @@ const RoomStates = {
   PAUSED: 'paused',
 };
 
+const rooms = new Map();
+
+const setupRoom = (roomId) => {
+  const room = {
+    participants: new Map()
+  };
+  rooms.set(roomId, room);
+  return room;
+}
+
+const tearDownRoom = (roomId) => {
+  rooms.delete(roomId);
+}
+
+const addUserToRoom = (roomId, nick, socketId) => {
+  const room = room.get(roomId);
+  if (room.participants.has(nick)) {
+    return false;
+  } else {
+    room.participants.set(nick, socketId);
+    return true;
+  }
+}
+
+const removeUserFromRoom = (roomId, nick, socketId) => {
+  const room = room.get(roomId);
+  if (room.participants.has(nick) && room.participants.get(nick) === socketId) {
+    room.participants.delete(nick);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 const getUserCount = (roomId) => {
-  return io.sockets.adapter.rooms[roomId].length;
+  return rooms.get(roomId).participants.size;
 }
 
 const setRoomState = (roomId, state) => {
-  const room = io.sockets.adapter.rooms[roomId];
+  const room = rooms.get(roomId);
   room.state = state;
 }
 
 const getRoomState = (roomId) => {
-  const room = io.sockets.adapter.rooms[roomId];
+  const room = rooms.get(roomId);
   return room.state;
 }
 
 const recalcRoomTime = (roomId, videoProgress) => {
-  const room = io.sockets.adapter.rooms[roomId];
+  const room = rooms.get(roomId);
   if (!room.time) room.time = {};
   room.time.date = new Date();
   room.time.progress = videoProgress;
 }
 
 const getVideoProgress = (roomId) => {
-  const room = io.sockets.adapter.rooms[roomId];
+  const room = rooms.get(roomId);
   if (!room.time) return null;
 
   const additionalProgress =
@@ -49,13 +83,24 @@ const io = socketIO(server);
 
 io.on('connection', socket => {
   const roomId = socket.handshake.query['room'] || socket.id;
+  let room;
+  if (rooms.has(roomId)) {
+    room = rooms.get(roomId);
+    if room.participants.has()
+  } else {
+    room = setupRoom(roomId);
+  }
+  //const room = rooms.get(roomId);
   let videoProgress = parseInt(socket.handshake.query['videoProgress']);
 
   console.log('Received connection try', { roomId, videoProgress });
 
-  socket.on('disconnect', () => console.log(`Client from room ${roomId} disconnected`));
+  socket.on('disconnect', () => {
+    console.log(`Client from room ${roomId} disconnected`);
+    removeUserFromRoom(roodId, )
+  });
 
-  socket.join(roomId, () => {
+  socket.join(roomId, (nick) => {
     if (getVideoProgress(roomId) === null) {
       recalcRoomTime(roomId, videoProgress);
     }
@@ -67,6 +112,7 @@ io.on('connection', socket => {
 
     socket.emit('join', roomId, roomState, videoProgress, userCount);
     socket.to(roomId).emit('update', socket.id, roomState, videoProgress, userCount);
+    // socket.to(roomId).emit('join');
   });
 
   socket.on('update', (videoState, videoProgress) => {
